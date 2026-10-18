@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>葬送的芙莉蓮｜女友專屬運動集點卡</title>
+  <title>葬送的芙莉蓮｜雙人即時同步運動集點卡</title>
+  <script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
   <style>
     :root {
       --bg-parchment: #f4f1ea;
@@ -210,6 +211,180 @@
       color: var(--frieren-emerald);
       display: block;
       margin-bottom: 2px;
+    }
+
+    /* Couple Sync Panel */
+    .sync-card {
+      background: linear-gradient(145deg, #f2fbf9 0%, #ffffff 60%, #fdf8ec 100%);
+      border-radius: 22px;
+      padding: 15px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1.8px solid var(--frieren-emerald-light);
+    }
+
+    .sync-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .sync-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--text-dark);
+    }
+
+    .sync-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      background: var(--frieren-emerald-bg);
+      color: var(--frieren-emerald);
+      border: 1px solid rgba(38, 145, 122, 0.28);
+    }
+
+    .sync-live-pill.connecting {
+      background: var(--gold-bg);
+      color: #9e7118;
+      border-color: rgba(200, 150, 46, 0.35);
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+      animation: pulseDot 2s infinite;
+    }
+
+    .sync-live-pill.connecting .sync-dot {
+      background: #d97706;
+      box-shadow: none;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.22); opacity: 0.75; }
+    }
+
+    .role-switch-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .role-btn {
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-warm);
+      background: #ffffff;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.18s ease;
+    }
+
+    .role-btn.active-gf {
+      background: var(--blush-bg);
+      color: #c84b59;
+      border-color: var(--blush-rose);
+      box-shadow: 0 3px 10px rgba(224, 109, 121, 0.18);
+    }
+
+    .role-btn.active-bf {
+      background: var(--frieren-emerald-bg);
+      color: var(--frieren-emerald);
+      border-color: var(--frieren-emerald);
+      box-shadow: 0 3px 10px rgba(38, 145, 122, 0.18);
+    }
+
+    .sync-room-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #ffffff;
+      border: 1.5px solid var(--border-warm);
+      border-radius: 13px;
+      padding: 8px 11px;
+      flex-wrap: wrap;
+    }
+
+    .room-code-info {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .room-code-badge {
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--frieren-emerald);
+      background: var(--frieren-emerald-bg);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .sync-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sync-action {
+      background: var(--bg-soft);
+      border: 1px solid var(--border-warm);
+      color: var(--text-dark);
+      padding: 5px 9px;
+      border-radius: 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-sync-action:hover {
+      border-color: var(--frieren-emerald);
+      color: var(--frieren-emerald);
+    }
+
+    .btn-sync-share {
+      background: var(--frieren-emerald);
+      border: 1px solid var(--frieren-emerald);
+      color: #ffffff;
+      padding: 5px 10px;
+      border-radius: 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-sync-share:hover {
+      filter: brightness(1.06);
     }
 
     .panel {
@@ -797,6 +972,9 @@
       transition: all 0.25s ease;
       z-index: 200;
       white-space: nowrap;
+      max-width: 94vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .toast.show {
@@ -849,7 +1027,7 @@
             <span class="gold-tag" onclick="openCustomImgModal()">🖼️ 自訂圖片</span>
           </div>
           <h1 class="hero-title">芙莉蓮的運動集點卡</h1>
-          <p class="hero-subtitle">一步一腳印累積魔力・集滿找男友開寶箱！</p>
+          <p class="hero-subtitle">雙人跨裝置即時同步・一起集點開寶箱！</p>
 
           <div class="pose-pills">
             <button class="pose-pill active" id="pill-0" onclick="selectFrierenPose(0)">坐姿抬頭</button>
@@ -866,6 +1044,40 @@
       </div>
     </div>
 
+    <!-- Real-Time Couple Cross-Device Sync Bar -->
+    <div class="sync-card">
+      <div class="sync-top-row">
+        <div class="sync-title-wrap">
+          <span>💞 雙人跨裝置同步</span>
+        </div>
+        <div class="sync-live-pill connecting" id="syncStatusBadge">
+          <span class="sync-dot"></span>
+          <span id="syncStatusText">正在連線同步魔法陣...</span>
+        </div>
+      </div>
+
+      <div class="role-switch-row">
+        <button class="role-btn active-gf" id="roleBtnGf" onclick="selectDeviceRole('gf')">
+          <span>👧 我是女友（運動集點）</span>
+        </button>
+        <button class="role-btn" id="roleBtnBf" onclick="selectDeviceRole('bf')">
+          <span>👦 我是男友（監督發獎）</span>
+        </button>
+      </div>
+
+      <div class="sync-room-bar">
+        <div class="room-code-info">
+          <span>同步暗號：</span>
+          <span class="room-code-badge" id="roomCodeDisplay">frieren-520</span>
+        </div>
+        <div class="sync-btn-group">
+          <button class="btn-sync-action" onclick="openSyncConfigModal()">🔑 改暗號</button>
+          <button class="btn-sync-action" onclick="manualSyncNow()">🔄 立即同步</button>
+          <button class="btn-sync-share" onclick="copyCoupleShareLink()">🔗 複製雙人同步網址</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Current Points & Stamp Button -->
     <div class="panel">
       <div class="points-header">
@@ -873,6 +1085,7 @@
           <div class="points-label">目前收集的魔力點數（上限 30 點）</div>
           <div class="points-sub">
             歷史累計運動：<strong id="totalWorkouts" style="color: var(--frieren-emerald);">0</strong> 次
+            <span id="lastSyncByText" style="margin-left:6px;font-size:11px;color:var(--gold-main);font-weight:700;"></span>
           </div>
         </div>
         <div class="points-number-wrap">
@@ -1639,7 +1852,7 @@
         <button class="btn-small" onclick="openEditRewardsModal()">✏️ 修改獎品</button>
       </div>
       <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-        集滿 5、10、20、30 點即可開啟寶箱兌換，兌換後會<strong>自動扣除對應點數</strong>，剩餘點數可繼續累積！
+        集滿 5、10、20、30 點即可開啟寶箱兌換，兌換後會<strong>自動扣除對應點數並即時同步到對方手機</strong>！
       </p>
       <div class="redeem-grid" id="redeemGrid">
         
@@ -1736,7 +1949,7 @@
     <!-- History & Cookie Status -->
     <div class="panel">
       <div class="section-title">
-        <span>冒險旅途紀錄冊</span>
+        <span>冒險旅途紀錄冊（雙人同步）</span>
         <button class="btn-small" onclick="confirmResetAll()">重置全部資料</button>
       </div>
       <ul class="history-list" id="historyList">
@@ -1746,7 +1959,7 @@
       <div class="cookie-bar">
         <div>
           <span class="cookie-status-dot"></span>
-          <span id="cookieStatusText">資料已自動儲存在瀏覽器 Cookie</span>
+          <span id="cookieStatusText">資料已自動儲存在 Cookie 並開啟雲端同步</span>
         </div>
         <div>
           <button class="btn-link" onclick="inspectCookieModal()">檢視/備份 Cookie 資料</button>
@@ -1763,6 +1976,30 @@
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeConfirmModal()">取消</button>
         <button class="btn-confirm" id="modalConfirmBtn">確認兌換</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Couple Sync Config Modal -->
+  <div class="modal-backdrop" id="syncConfigModal">
+    <div class="modal-box">
+      <div class="modal-title">💞 雙人跨裝置同步設定</div>
+      <div class="modal-body">
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;">
+          只要你的裝置跟女友的手機輸入<strong>相同的「同步暗號」</strong>（或點「複製雙人同步網址」傳給她），兩邊蓋章與兌換就會秒速同步！
+        </p>
+        <div class="modal-input-group">
+          <label>🔑 情侶專屬同步暗號（建議英文+數字，例如 frieren-0520）</label>
+          <input type="text" id="inputRoomCode" placeholder="frieren-520" maxlength="40" />
+        </div>
+        <div class="modal-input-group" style="margin-top:12px;">
+          <label>☁️ 進階選填：自訂 Firebase Realtime DB 網址（留空即使用內建免費雙通道同步）</label>
+          <input type="url" id="inputFirebaseUrl" placeholder="選填：https://your-project-default-rtdb.firebaseio.com" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeSyncConfigModal()">取消</button>
+        <button class="btn-confirm" onclick="saveSyncConfig()">儲存並連線同步</button>
       </div>
     </div>
   </div>
@@ -1842,11 +2079,6 @@
     const MAX_POINTS = 30;
     const MILESTONES = [5, 10, 20, 30];
 
-    // Real web image galleries with backup CDN URLs per pose:
-    // 0: MegaHouse LookUp Frieren (Sitting LookUp figure - same series as user's Ulquiorra figure!)
-    // 1: MegaHouse LookUp Frieren Shoboshobo Ver. (Cute droopy/sleepy face LookUp figure)
-    // 2: Good Smile Company Nendoroid Mimic eating Frieren
-    // 3: Official Frieren Anime Chibi/Icon
     const POSE_GALLERY = [
       [
         "https://tohoanimationstore.us/cdn/shop/files/4535123838934_1.jpg?v=1790212566&width=800",
@@ -1894,10 +2126,22 @@
       }
     };
 
+    let deviceRole = "gf"; // 'gf' or 'bf'
+    let roomCode = "frieren-520";
+    let customFirebaseUrl = "";
+    let clientUniqueId = "dev_" + Math.random().toString(36).substring(2, 10);
+    let mqttClient = null;
+    let ntfyEventSource = null;
+    let firebasePollTimer = null;
+    let isConnectedCloud = false;
+
     let appState = {
       p: 0,
       total: 0,
       pose: 0,
+      v: 0,
+      ts: 0,
+      lastBy: "",
       r: {
         5: DEFAULT_REWARDS[5].title,
         10: DEFAULT_REWARDS[10].title,
@@ -1906,6 +2150,28 @@
       },
       h: []
     };
+
+    function getRoleLabel() {
+      return deviceRole === "bf" ? "👦 男友" : "👧 女友";
+    }
+
+    function selectDeviceRole(role) {
+      deviceRole = (role === "bf") ? "bf" : "gf";
+      try {
+        localStorage.setItem("frieren_device_role", deviceRole);
+      } catch (e) {}
+      renderRoleButtons();
+      showToast("已切換操作身分為：" + getRoleLabel());
+    }
+
+    function renderRoleButtons() {
+      const gfBtn = document.getElementById("roleBtnGf");
+      const bfBtn = document.getElementById("roleBtnBf");
+      if (gfBtn && bfBtn) {
+        gfBtn.className = "role-btn" + (deviceRole === "gf" ? " active-gf" : "");
+        bfBtn.className = "role-btn" + (deviceRole === "bf" ? " active-bf" : "");
+      }
+    }
 
     function handleHeroImageError(imgEl) {
       const candidates = POSE_GALLERY[appState.pose] || POSE_GALLERY[0];
@@ -1941,6 +2207,7 @@
       document.cookie = COOKIE_NAME + "=" + encoded + "; max-age=31536000; path=/; SameSite=Lax";
       try {
         localStorage.setItem(COOKIE_NAME, jsonStr);
+        localStorage.setItem(COOKIE_NAME + "_room_" + roomCode, jsonStr);
       } catch (e) {}
     }
 
@@ -1962,39 +2229,388 @@
       return null;
     }
 
+    function sanitizeRoomCode(raw) {
+      const cleaned = String(raw || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+      return cleaned || "frieren-520";
+    }
+
+    function applyStateObject(parsed) {
+      if (!parsed || typeof parsed.p !== "number") return false;
+      appState.p = Math.max(0, Math.min(MAX_POINTS, parsed.p));
+      appState.total = parsed.total || 0;
+      appState.pose = typeof parsed.pose === "number" ? (parsed.pose % 4) : 0;
+      appState.v = typeof parsed.v === "number" ? parsed.v : 0;
+      appState.ts = typeof parsed.ts === "number" ? parsed.ts : 0;
+      appState.lastBy = parsed.lastBy || "";
+      if (parsed.r) {
+        appState.r = {
+          5: parsed.r[5] || DEFAULT_REWARDS[5].title,
+          10: parsed.r[10] || DEFAULT_REWARDS[10].title,
+          20: parsed.r[20] || DEFAULT_REWARDS[20].title,
+          30: parsed.r[30] || DEFAULT_REWARDS[30].title
+        };
+      }
+      if (Array.isArray(parsed.h)) {
+        appState.h = parsed.h.slice(0, 15);
+      }
+      return true;
+    }
+
     function loadState() {
-      let saved = readRawCookie(COOKIE_NAME);
+      try {
+        const savedRole = localStorage.getItem("frieren_device_role");
+        if (savedRole === "bf" || savedRole === "gf") deviceRole = savedRole;
+        const savedRoom = localStorage.getItem("frieren_sync_room");
+        if (savedRoom) roomCode = sanitizeRoomCode(savedRoom);
+        const savedFb = localStorage.getItem("frieren_firebase_url");
+        if (savedFb) customFirebaseUrl = savedFb.trim();
+      } catch (e) {}
+
+      // Check URL parameters (?room=xxx&role=bf&s=encodedState)
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("room")) {
+          roomCode = sanitizeRoomCode(params.get("room"));
+          try { localStorage.setItem("frieren_sync_room", roomCode); } catch (e) {}
+        }
+        if (params.get("role") === "bf" || params.get("role") === "gf") {
+          deviceRole = params.get("role");
+          try { localStorage.setItem("frieren_device_role", deviceRole); } catch (e) {}
+        }
+      } catch (e) {}
+
+      let saved = null;
+      try {
+        const roomSpecific = localStorage.getItem(COOKIE_NAME + "_room_" + roomCode);
+        if (roomSpecific) saved = JSON.parse(roomSpecific);
+      } catch (e) {}
+
+      if (!saved) {
+        saved = readRawCookie(COOKIE_NAME);
+      }
+
       if (!saved) {
         for (let i = 0; i < LEGACY_COOKIES.length; i++) {
           const legacy = readRawCookie(LEGACY_COOKIES[i]);
           if (legacy && typeof legacy.p === "number") {
-            appState.p = Math.max(0, Math.min(MAX_POINTS, legacy.p));
-            appState.total = legacy.total || 0;
-            appState.h = Array.isArray(legacy.h) ? legacy.h.slice(0, 15) : [];
+            applyStateObject(legacy);
             break;
           }
         }
-      } else if (typeof saved.p === "number") {
-        appState.p = Math.max(0, Math.min(MAX_POINTS, saved.p));
-        appState.total = saved.total || 0;
-        appState.pose = typeof saved.pose === "number" ? (saved.pose % 4) : 0;
-        if (saved.r) {
-          appState.r = {
-            5: saved.r[5] || DEFAULT_REWARDS[5].title,
-            10: saved.r[10] || DEFAULT_REWARDS[10].title,
-            20: saved.r[20] || DEFAULT_REWARDS[20].title,
-            30: saved.r[30] || DEFAULT_REWARDS[30].title
-          };
-        }
-        if (Array.isArray(saved.h)) {
-          appState.h = saved.h.slice(0, 15);
-        }
+      } else {
+        applyStateObject(saved);
       }
+
+      // Also check if URL has an initial state snapshot ?s=... that is newer
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlStateRaw = params.get("s");
+        if (urlStateRaw) {
+          const decoded = JSON.parse(decodeURIComponent(atob(urlStateRaw)));
+          if (decoded && typeof decoded.p === "number") {
+            const remoteV = decoded.v || 0;
+            const localV = appState.v || 0;
+            if (remoteV > localV || (remoteV === localV && (decoded.ts || 0) > (appState.ts || 0))) {
+              applyStateObject(decoded);
+            }
+          }
+        }
+      } catch (e) {}
+
       try {
         const savedCustomImg = localStorage.getItem("frieren_custom_hero_img");
         if (savedCustomImg) customHeroUrl = savedCustomImg;
       } catch (e) {}
+
       setCookieData(appState);
+      renderRoleButtons();
+      document.getElementById("roomCodeDisplay").textContent = roomCode;
+    }
+
+    // =========================================================================
+    // Dual-Channel Cloud Real-Time Sync (MQTT Retained WebSockets + ntfy.sh + Optional Firebase)
+    // =========================================================================
+    function getMqttTopic() {
+      return "frieren_couple_card_v4/" + roomCode + "/state";
+    }
+
+    function getNtfyTopic() {
+      return "frieren_couple_v4_" + roomCode.replace(/[^a-z0-9]/g, "_");
+    }
+
+    function setSyncBadge(statusType, text) {
+      const badge = document.getElementById("syncStatusBadge");
+      const txt = document.getElementById("syncStatusText");
+      if (!badge || !txt) return;
+      if (statusType === "connected") {
+        badge.classList.remove("connecting");
+        isConnectedCloud = true;
+      } else {
+        badge.classList.add("connecting");
+      }
+      txt.textContent = text;
+    }
+
+    function handleIncomingRemoteState(payload, sourceLabel) {
+      if (!payload || typeof payload.p !== "number") return;
+      if (payload.senderId && payload.senderId === clientUniqueId) return;
+
+      const remoteV = typeof payload.v === "number" ? payload.v : 0;
+      const localV = typeof appState.v === "number" ? appState.v : 0;
+      const remoteTs = typeof payload.ts === "number" ? payload.ts : 0;
+      const localTs = typeof appState.ts === "number" ? appState.ts : 0;
+
+      // If remote state is newer than our local state, adopt it!
+      if (remoteV > localV || (remoteV === localV && remoteTs > localTs)) {
+        const prevP = appState.p;
+        const prevPose = appState.pose;
+        applyStateObject(payload);
+        setCookieData(appState);
+        if (prevPose !== appState.pose) {
+          updateHeroImageSource();
+        }
+        renderAll();
+        const latestLog = (appState.h && appState.h[0]) ? appState.h[0].t : ("目前點數 " + appState.p + " 點");
+        if (prevP !== appState.p || remoteV > localV) {
+          showToast("🔔 同步更新：" + latestLog);
+        }
+      } else if (localV > remoteV) {
+        // Our local device has newer offline changes -> push ours to cloud so partner gets it
+        pushStateToCloud(false);
+      }
+    }
+
+    function commitAndSyncState(actionLabel) {
+      appState.v = (appState.v || 0) + 1;
+      appState.ts = Date.now();
+      appState.lastBy = getRoleLabel();
+      setCookieData(appState);
+      renderAll();
+      pushStateToCloud(true);
+    }
+
+    function pushStateToCloud(isUserAction) {
+      const packet = Object.assign({}, appState, {
+        senderId: clientUniqueId,
+        room: roomCode
+      });
+      const jsonStr = JSON.stringify(packet);
+
+      // 1. Publish via MQTT over WebSockets with retain: true (instant <100ms sync + retained for offline device)
+      if (mqttClient && mqttClient.connected) {
+        try {
+          mqttClient.publish(getMqttTopic(), jsonStr, { qos: 1, retain: true });
+        } catch (e) {}
+      }
+
+      // 2. Publish via ntfy.sh HTTPS (works even on networks that block WebSockets)
+      if (isUserAction) {
+        try {
+          fetch("https://ntfy.sh/" + getNtfyTopic(), {
+            method: "POST",
+            body: jsonStr
+          }).catch(function() {});
+        } catch (e) {}
+      }
+
+      // 3. Optional Custom Firebase Realtime Database REST PUT
+      if (customFirebaseUrl) {
+        try {
+          const cleanFb = customFirebaseUrl.replace(/\/+$/, "");
+          fetch(cleanFb + "/frieren_rooms/" + encodeURIComponent(roomCode) + ".json", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: jsonStr
+          }).catch(function() {});
+        } catch (e) {}
+      }
+    }
+
+    function connectCloudSync() {
+      document.getElementById("roomCodeDisplay").textContent = roomCode;
+      setSyncBadge("connecting", "正在連線雙人同步 (" + roomCode + ")...");
+
+      // Clean up existing connections
+      if (mqttClient) {
+        try { mqttClient.end(true); } catch (e) {}
+        mqttClient = null;
+      }
+      if (ntfyEventSource) {
+        try { ntfyEventSource.close(); } catch (e) {}
+        ntfyEventSource = null;
+      }
+      if (firebasePollTimer) {
+        clearInterval(firebasePollTimer);
+        firebasePollTimer = null;
+      }
+
+      // Channel A: MQTT over WSS (broker.emqx.io:8084)
+      if (typeof window.mqtt !== "undefined") {
+        try {
+          mqttClient = window.mqtt.connect("wss://broker.emqx.io:8084/mqtt", {
+            clientId: "frieren_" + clientUniqueId + "_" + Math.floor(Math.random() * 9999),
+            clean: true,
+            connectTimeout: 8000,
+            reconnectPeriod: 4000
+          });
+
+          mqttClient.on("connect", function() {
+            setSyncBadge("connected", "🟢 雙人即時同步中 (" + roomCode + ")");
+            const topic = getMqttTopic();
+            mqttClient.subscribe(topic, { qos: 1 }, function(err) {
+              if (!err && appState.v > 0) {
+                // Broadcast our state if we already have progress
+                pushStateToCloud(false);
+              }
+            });
+          });
+
+          mqttClient.on("message", function(topic, messageBuffer) {
+            try {
+              const parsed = JSON.parse(messageBuffer.toString());
+              handleIncomingRemoteState(parsed, "MQTT");
+            } catch (e) {}
+          });
+
+          mqttClient.on("offline", function() {
+            setSyncBadge("connecting", "🟡 備援同步連線中 (" + roomCode + ")");
+          });
+        } catch (e) {}
+      }
+
+      // Channel B: ntfy.sh cached message fetch + live SSE stream
+      pullNtfyLatest();
+      try {
+        if (typeof window.EventSource !== "undefined") {
+          ntfyEventSource = new EventSource("https://ntfy.sh/" + getNtfyTopic() + "/sse");
+          ntfyEventSource.onopen = function() {
+            setSyncBadge("connected", "🟢 雙人即時同步中 (" + roomCode + ")");
+          };
+          ntfyEventSource.onmessage = function(evt) {
+            try {
+              const wrapper = JSON.parse(evt.data);
+              if (wrapper && wrapper.message) {
+                const payload = JSON.parse(wrapper.message);
+                handleIncomingRemoteState(payload, "ntfy");
+              }
+            } catch (e) {}
+          };
+        }
+      } catch (e) {}
+
+      // Channel C: Optional Firebase Realtime Database polling
+      if (customFirebaseUrl) {
+        pullFirebaseLatest();
+        firebasePollTimer = setInterval(pullFirebaseLatest, 4000);
+      }
+    }
+
+    function pullNtfyLatest() {
+      try {
+        fetch("https://ntfy.sh/" + getNtfyTopic() + "/json?poll=1&since=all")
+          .then(function(res) { return res.text(); })
+          .then(function(text) {
+            setSyncBadge("connected", "🟢 雙人即時同步中 (" + roomCode + ")");
+            const lines = text.trim().split("\n");
+            for (let i = 0; i < lines.length; i++) {
+              if (!lines[i]) continue;
+              try {
+                const wrapper = JSON.parse(lines[i]);
+                if (wrapper && wrapper.message) {
+                  const payload = JSON.parse(wrapper.message);
+                  handleIncomingRemoteState(payload, "ntfy-poll");
+                }
+              } catch (err) {}
+            }
+          })
+          .catch(function() {});
+      } catch (e) {}
+    }
+
+    function pullFirebaseLatest() {
+      if (!customFirebaseUrl) return;
+      try {
+        const cleanFb = customFirebaseUrl.replace(/\/+$/, "");
+        fetch(cleanFb + "/frieren_rooms/" + encodeURIComponent(roomCode) + ".json")
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data && typeof data.p === "number") {
+              setSyncBadge("connected", "🟢 Firebase 雙人同步中 (" + roomCode + ")");
+              handleIncomingRemoteState(data, "Firebase");
+            }
+          })
+          .catch(function() {});
+      } catch (e) {}
+    }
+
+    function manualSyncNow() {
+      pullNtfyLatest();
+      pullFirebaseLatest();
+      pushStateToCloud(true);
+      showToast("🔄 已發送並拉取最新雙人同步點數！");
+    }
+
+    function openSyncConfigModal() {
+      document.getElementById("inputRoomCode").value = roomCode;
+      document.getElementById("inputFirebaseUrl").value = customFirebaseUrl;
+      document.getElementById("syncConfigModal").classList.add("show");
+    }
+
+    function closeSyncConfigModal() {
+      document.getElementById("syncConfigModal").classList.remove("show");
+    }
+
+    function saveSyncConfig() {
+      const newRoom = sanitizeRoomCode(document.getElementById("inputRoomCode").value);
+      const newFb = document.getElementById("inputFirebaseUrl").value.trim();
+      roomCode = newRoom;
+      customFirebaseUrl = newFb;
+      try {
+        localStorage.setItem("frieren_sync_room", roomCode);
+        localStorage.setItem("frieren_firebase_url", customFirebaseUrl);
+      } catch (e) {}
+      closeSyncConfigModal();
+      connectCloudSync();
+      pushStateToCloud(true);
+      showToast("✅ 已切換同步暗號為：" + roomCode);
+    }
+
+    function copyCoupleShareLink() {
+      let baseUrl = window.location.href.split("?")[0].split("#")[0];
+      const partnerRole = (deviceRole === "gf") ? "bf" : "gf";
+      let shareUrl = baseUrl + "?room=" + encodeURIComponent(roomCode) + "&role=" + partnerRole;
+      try {
+        const snapshot = btoa(encodeURIComponent(JSON.stringify(appState)));
+        if (snapshot.length < 1200) {
+          shareUrl += "&s=" + encodeURIComponent(snapshot);
+        }
+      } catch (e) {}
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(function() {
+          showToast("🔗 已複製雙人同步網址！快傳給對方打開吧！");
+        }).catch(function() {
+          fallbackCopyText(shareUrl);
+        });
+      } else {
+        fallbackCopyText(shareUrl);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("🔗 已複製雙人同步網址！快傳給對方打開吧！");
+      } catch (e) {
+        showToast("請複製暗號：" + roomCode);
+      }
+      document.body.removeChild(ta);
     }
 
     function formatTimeNow() {
@@ -2007,8 +2623,9 @@
     }
 
     function addLog(text, type) {
+      const actor = getRoleLabel();
       appState.h.unshift({
-        t: text,
+        t: actor + "：" + text,
         time: formatTimeNow(),
         type: type || "workout"
       });
@@ -2062,11 +2679,10 @@
       customHeroUrl = "";
       try { localStorage.removeItem("frieren_custom_hero_img"); } catch (e) {}
       appState.pose = idx % 4;
-      setCookieData(appState);
       updateHeroImageSource();
-      renderAll();
+      commitAndSyncState("切換圖片");
       const labels = ["るかっぷ 坐姿抬頭芙莉蓮", "るかっぷ 委屈呆萌芙莉蓮", "黏土人 寶箱怪咬芙莉蓮", "官方動畫頭像芙莉蓮"];
-      showToast("✨ 已切換：" + labels[appState.pose]);
+      showToast("✨ 已切換並同步：" + labels[appState.pose]);
     }
 
     function cycleFrierenPose() {
@@ -2092,6 +2708,11 @@
 
       document.getElementById("currentPoints").textContent = appState.p;
       document.getElementById("totalWorkouts").textContent = appState.total;
+      const lastSyncEl = document.getElementById("lastSyncByText");
+      if (lastSyncEl) {
+        lastSyncEl.textContent = appState.lastBy ? ("・最新操作：" + appState.lastBy) : "";
+      }
+
       const pct = Math.min(100, Math.round((appState.p / MAX_POINTS) * 100));
       document.getElementById("progressFill").style.width = pct + "%";
 
@@ -2153,8 +2774,8 @@
 
       const hasNativeCookie = document.cookie.indexOf(COOKIE_NAME) !== -1;
       document.getElementById("cookieStatusText").textContent = hasNativeCookie
-        ? ("Cookie 已自動儲存（目前 " + appState.p + "/30 點）")
-        : ("本機儲存已同步（目前 " + appState.p + "/30 點）");
+        ? ("Cookie + 雙人雲端已同步（目前 " + appState.p + "/30 點）")
+        : ("本機 + 雙人雲端已同步（目前 " + appState.p + "/30 點）");
     }
 
     function changePoints(delta) {
@@ -2169,18 +2790,17 @@
         appState.total += delta;
         addLog("🪄 運動蓋章 (+" + delta + " 點) → 目前 " + appState.p + " 點", "workout");
         if (MILESTONES.indexOf(appState.p) !== -1) {
-          showToast("🎉 集滿 " + appState.p + " 點！解鎖【" + appState.r[appState.p] + "】＜(ˊ⌯ ̫ ⌯ˋ)＞");
+          showToast("🎉 集滿 " + appState.p + " 點！解鎖【" + appState.r[appState.p] + "】並同步給對方！");
         } else {
-          showToast("🪄 芙莉蓮幫妳蓋章 +1（目前 " + appState.p + " / 30 點）");
+          showToast("🪄 蓋章 +1 並已同步（目前 " + appState.p + " / 30 點）");
         }
       } else {
         appState.total = Math.max(0, appState.total - 1);
         addLog("↩️ 撤銷蓋章 (-1 點) → 目前 " + appState.p + " 點", "undo");
-        showToast("已撤銷 1 點（目前 " + appState.p + " / 30 點）");
+        showToast("已撤銷 1 點並同步（目前 " + appState.p + " / 30 點）");
       }
 
-      setCookieData(appState);
-      renderAll();
+      commitAndSyncState("changePoints");
     }
 
     function onCellClick(cellNumber) {
@@ -2191,15 +2811,14 @@
       } else if (cellNumber > appState.p) {
         openConfirmModal(
           "快速蓋章確認",
-          "要直接蓋章到第 <strong>" + cellNumber + " 點</strong>（一口氣增加 " + (cellNumber - appState.p) + " 點）嗎？",
+          "要直接蓋章到第 <strong>" + cellNumber + " 點</strong>（一口氣增加 " + (cellNumber - appState.p) + " 點）並同步給對方嗎？",
           function() {
             const diff = cellNumber - appState.p;
             appState.p = cellNumber;
             appState.total += diff;
             addLog("🪄 快速蓋章 (+" + diff + " 點) → 目前 " + appState.p + " 點", "workout");
-            setCookieData(appState);
-            renderAll();
-            showToast("🪄 已更新為 " + appState.p + " 點！");
+            commitAndSyncState("quickStamp");
+            showToast("🪄 已更新為 " + appState.p + " 點並同步！");
           }
         );
       }
@@ -2211,13 +2830,12 @@
       const icon = DEFAULT_REWARDS[cost].icon;
       openConfirmModal(
         "開啟 " + cost + " 點獎勵寶箱",
-        "確定要消除 <strong>" + cost + " 點</strong> 來兌換：<br/><br/><span style='font-size:16px;font-weight:900;color:var(--frieren-emerald);'>" + icon + " " + escapeHtml(rewardName) + "</span><br/><br/>兌換後剩餘點數將變為 <strong>" + (appState.p - cost) + " 點</strong>。",
+        "確定要消除 <strong>" + cost + " 點</strong> 來兌換：<br/><br/><span style='font-size:16px;font-weight:900;color:var(--frieren-emerald);'>" + icon + " " + escapeHtml(rewardName) + "</span><br/><br/>兌換後剩餘點數將變為 <strong>" + (appState.p - cost) + " 點</strong>，並即時同步到對方的裝置。",
         function() {
           appState.p = Math.max(0, appState.p - cost);
           addLog(icon + " 兌換【" + rewardName + "】(消除 " + cost + " 點，剩 " + appState.p + " 點)", "redeem");
-          setCookieData(appState);
-          renderAll();
-          showToast("🎁 兌換【" + rewardName + "】成功！快找男友領獎 ＜(ˊ⌯ ̫ ⌯ˋ)＞");
+          commitAndSyncState("redeem");
+          showToast("🎁 兌換【" + rewardName + "】成功！已同步通知對方 ＜(ˊ⌯ ̫ ⌯ˋ)＞");
         }
       );
     }
@@ -2296,10 +2914,10 @@
       appState.r[10] = document.getElementById("inputR10").value.trim() || DEFAULT_REWARDS[10].title;
       appState.r[20] = document.getElementById("inputR20").value.trim() || DEFAULT_REWARDS[20].title;
       appState.r[30] = document.getElementById("inputR30").value.trim() || DEFAULT_REWARDS[30].title;
-      setCookieData(appState);
-      renderAll();
+      addLog("✏️ 更新了獎勵寶箱內容", "workout");
+      commitAndSyncState("editRewards");
       closeEditRewardsModal();
-      showToast("✅ 獎品已更新並存入 Cookie！");
+      showToast("✅ 獎品已更新並同步給對方！");
     }
 
     function inspectCookieModal() {
@@ -2316,14 +2934,10 @@
       try {
         const parsed = JSON.parse(raw);
         if (typeof parsed.p === "number") {
-          appState.p = Math.max(0, Math.min(MAX_POINTS, parsed.p));
-          appState.total = parsed.total || 0;
-          if (parsed.r) appState.r = parsed.r;
-          if (Array.isArray(parsed.h)) appState.h = parsed.h;
-          setCookieData(appState);
-          renderAll();
+          applyStateObject(parsed);
+          commitAndSyncState("importBackup");
           closeCookieModal();
-          showToast("✅ 已成功還原 Cookie 資料！");
+          showToast("✅ 已成功還原並同步資料！");
           return;
         }
       } catch (e) {}
@@ -2333,14 +2947,14 @@
     function confirmResetAll() {
       openConfirmModal(
         "重置所有集點紀錄",
-        "確定要將目前點數與歷史紀錄全部歸零嗎？此操作會清除 Cookie 中的進度。",
+        "確定要將目前點數與歷史紀錄全部歸零嗎？此操作也會同步將對方裝置上的進度歸零。",
         function() {
           appState.p = 0;
           appState.total = 0;
           appState.h = [];
-          setCookieData(appState);
-          renderAll();
-          showToast("已將所有點數與紀錄歸零。");
+          addLog("🔄 重置了所有集點卡進度", "undo");
+          commitAndSyncState("reset");
+          showToast("已將所有點數與紀錄歸零並同步。");
         }
       );
     }
@@ -2359,6 +2973,7 @@
     loadState();
     updateHeroImageSource();
     renderAll();
+    connectCloudSync();
   </script>
 </body>
 </html>
